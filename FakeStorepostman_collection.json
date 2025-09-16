@@ -1,0 +1,577 @@
+{
+	"info": {
+		"_postman_id": "15b83d8c-949a-4c20-b1d8-8175152f80f3",
+		"name": "FakeStore",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39332197",
+		"_collection_link": "https://apitestteam-7888.postman.co/workspace/Sample_Test~38e37851-8b7b-4397-8f96-cb1ed1bc3604/collection/39332197-15b83d8c-949a-4c20-b1d8-8175152f80f3?action=share&source=collection_link&creator=39332197"
+	},
+	"item": [
+		{
+			"name": "GetAllProducts",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 1500ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1500);\r",
+							"});\r",
+							"\r",
+							"// Verify 400 Bad request only when status is not successful\r",
+							"if (pm.response.code >= 400 && pm.response.code < 500) {\r",
+							"    pm.test(\"Response status code is 400 for 'bad' request\", function () {\r",
+							"        pm.expect(pm.response.code).to.equal(400);\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// Check response headers\r",
+							"pm.test(\"Response has Content-Type header\", function () {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.equal(\"application/json\");\r",
+							"});\r",
+							"\r",
+							"// Parse response body\r",
+							"const response = pm.response.json();\r",
+							"\r",
+							"// Validate response structure\r",
+							"pm.test(\"Response is an array\", function () {\r",
+							"    pm.expect(response).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"// Loop through each object in the response array\r",
+							"response.forEach(item => {\r",
+							"    pm.test(`Item with id ${item.id} has a valid structure`, function () {\r",
+							"        pm.expect(item).to.have.all.keys('id', 'name', 'data');\r",
+							"        pm.expect(item.id).to.be.a('string');\r",
+							"        pm.expect(item.name).to.be.a('string');\r",
+							"    });\r",
+							"}); // Added missing closing brace\r",
+							"\r",
+							"pm.execution.setNextRequest(\"AddNewProduct\");\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{fsurl}}/objects",
+					"host": [
+						"{{fsurl}}"
+					],
+					"path": [
+						"objects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AddNewProduct",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200 for successful product creation\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response body contains the correct product details\", function () {\r",
+							"    const responseBody = pm.response.json();\r",
+							"    pm.expect(responseBody.id).to.not.be.undefined;\r",
+							"    pm.expect(responseBody.name).to.eql(pm.globals.get(\"name\"));\r",
+							"    pm.expect(responseBody.data.year).to.eql(Number(pm.globals.get(\"year\"))); // Ensure comparison is with a number\r",
+							"    pm.expect(responseBody.data.price).to.eql(Number(pm.globals.get(\"price\"))); // Ensure comparison is with a number\r",
+							"    pm.expect(responseBody.data[\"CPU model\"]).to.eql(pm.globals.get(\"CPUmodel\"));\r",
+							"    pm.expect(responseBody.data[\"Hard disk size\"]).to.eql(pm.globals.get(\"Harddisksize\"));\r",
+							"});\r",
+							"\r",
+							"// Check response time is less than 1000ms\r",
+							"pm.test(\"Response time is less than 1000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"// Validate the Content-Type header\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.eql(\"application/json\");\r",
+							"});\r",
+							"\r",
+							"// Validate the presence of createdAt field in the response\r",
+							"pm.test(\"Response body contains createdAt field\", function () {\r",
+							"    const responseBody = pm.response.json();\r",
+							"    pm.expect(responseBody.createdAt).to.exist;\r",
+							"});\r",
+							"\r",
+							"// Validate the presence of id field in the response\r",
+							"pm.test(\"Response body contains id field\", function () {\r",
+							"    const responseBody = pm.response.json();\r",
+							"    pm.expect(responseBody.id).to.exist;\r",
+							"});\r",
+							"\r",
+							"// Validate the type of the id field\r",
+							"pm.test(\"id field is a string\", function () {\r",
+							"    const responseBody = pm.response.json();\r",
+							"    pm.expect(responseBody.id).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"// Validate the structure of the data object\r",
+							"pm.test(\"data object has correct structure\", function () {\r",
+							"    const responseBody = pm.response.json();\r",
+							"    pm.expect(responseBody.data).to.be.an('object');\r",
+							"    pm.expect(responseBody.data).to.have.all.keys('year', 'price', 'CPU model', 'Hard disk size');\r",
+							"});\r",
+							"\r",
+							"const responsedata = pm.response.json();\r",
+							"pm.globals.set(\"product_id\", responsedata.id);\r",
+							"\r",
+							"pm.execution.setNextRequest(\"GetSingleProduct\");\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"name\": \"{{name}}\",\r\n   \"data\": {\r\n      \"year\": {{year}},\r\n      \"price\": {{price}},\r\n      \"CPU model\": \"{{CPUmodel}}\",\r\n      \"Hard disk size\": \"{{Harddisksize}}\"\r\n   }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{fsurl}}/objects",
+					"host": [
+						"{{fsurl}}"
+					],
+					"path": [
+						"objects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateProduct",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"console.log(\"Setting up the global variables\")\r",
+							"\r",
+							"pm.globals.set(\"year\",\"2026\")\r",
+							"pm.globals.set(\"price\",\"240.66\")\r",
+							"pm.globals.set(\"CPUmodel\",\"Intel Core i7\")\r",
+							"pm.globals.set(\"Harddisksize\",\"3 TB\")\r",
+							"pm.globals.set(\"color\",\"Silver\")\r",
+							"pm.globals.set(\"name\", \"Apple MacBook Pro 19\")"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();\r",
+							"\r",
+							"// Status code check\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"// Validate response structure\r",
+							"pm.test(\"Response has required properties\", function () {\r",
+							"    pm.expect(response).to.have.property('id');\r",
+							"    pm.expect(response).to.have.property('name');\r",
+							"    pm.expect(response).to.have.property('updatedAt');\r",
+							"    pm.expect(response).to.have.property('data');\r",
+							"});\r",
+							"\r",
+							"// Validate 'data' object properties\r",
+							"pm.test(\"Data object has required properties\", function () {\r",
+							"    pm.expect(response.data).to.have.property('year');\r",
+							"    pm.expect(response.data).to.have.property('price');\r",
+							"    pm.expect(response.data).to.have.property('CPU model');\r",
+							"    pm.expect(response.data).to.have.property('Hard disk size');\r",
+							"    pm.expect(response.data).to.have.property('color');\r",
+							"});\r",
+							"\r",
+							"// Validate data types\r",
+							"pm.test(\"Response field types are correct\", function () {\r",
+							"    pm.expect(response.id).to.be.a('string');\r",
+							"    pm.expect(response.name).to.be.a('string');\r",
+							"    pm.expect(response.updatedAt).to.be.a('string');\r",
+							"    pm.expect(response.data.year).to.be.a('number');\r",
+							"    pm.expect(response.data.price).to.be.a('number');\r",
+							"    pm.expect(response.data['CPU model']).to.be.a('string');\r",
+							"    pm.expect(response.data['Hard disk size']).to.be.a('string');\r",
+							"    pm.expect(response.data.color).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"// Match response data with global variable values\r",
+							"pm.test(\"Response data matches global variable values\", function () {\r",
+							"    pm.expect(response.id).to.equal(pm.globals.get(\"product_id\"));\r",
+							"    pm.expect(response.name).to.equal(pm.globals.get(\"name\"));\r",
+							"    pm.expect(response.data.year).to.equal(Number(pm.globals.get(\"year\")));\r",
+							"    pm.expect(response.data.price).to.equal(Number(pm.globals.get(\"price\")));\r",
+							"    pm.expect(response.data[\"CPU model\"]).to.equal(pm.globals.get(\"CPUmodel\"));\r",
+							"    pm.expect(response.data[\"Hard disk size\"]).to.equal(pm.globals.get(\"Harddisksize\"));\r",
+							"    pm.expect(response.data.color).to.equal(pm.globals.get(\"color\"));\r",
+							"});\r",
+							"\r",
+							"pm.execution.setNextRequest(\"AllProductsByID\")\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"name\": \"{{name}}\",\r\n   \"data\": {\r\n      \"year\": {{year}},\r\n      \"price\": {{price}},\r\n      \"CPU model\": \"{{CPUmodel}}\",\r\n      \"Hard disk size\": \"{{Harddisksize}}\",\r\n      \"color\": \"{{color}}\"\r\n   }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{fsurl}}/objects/{{product_id}}",
+					"host": [
+						"{{fsurl}}"
+					],
+					"path": [
+						"objects",
+						"{{product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteProduct",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// If status code is not 404, validate the response structure and message property\r",
+							"if (pm.response.code !== 404) {\r",
+							"    // Parse the response body\r",
+							"    const response = pm.response.json();\r",
+							"\r",
+							"    // Check if the response status code is 200\r",
+							"    pm.test(\"Status code is 200\", function () {\r",
+							"        pm.expect(pm.response.code).to.equal(200);\r",
+							"    });\r",
+							"\r",
+							"    // Validate the response structure and message property\r",
+							"    pm.test(\"Response has a message property\", function () {\r",
+							"        pm.expect(response).to.have.property(\"message\");\r",
+							"        pm.expect(response.message).to.be.a(\"string\");\r",
+							"    });\r",
+							"\r",
+							"    // Check if the response time is within acceptable limits\r",
+							"    pm.test(\"Response time is acceptable\", function () {\r",
+							"        pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"    });\r",
+							"\r",
+							"    // Validate Content-Type header\r",
+							"    pm.test(\"Content-Type is application/json\", function () {\r",
+							"        pm.expect(pm.response.headers.get(\"Content-Type\")).to.equal(\"application/json\");\r",
+							"    });\r",
+							"\r",
+							"    // Verify the message text value in the response\r",
+							"    pm.test(\"Response message text value is correct\", function () {\r",
+							"        pm.expect(response.message).to.equal(`Object with id = ${pm.globals.get(\"product_id\")} has been deleted.`);\r",
+							"    });\r",
+							"\r",
+							"    pm.execution.setNextRequest(\"VerifyProductDeleted\")\r",
+							"} else {\r",
+							"    // Parse the response body\r",
+							"    const response = pm.response.json();\r",
+							"    console.error(\"Product doesn't exist.\")\r",
+							"\r",
+							"    // Check if the response status code is 404\r",
+							"    pm.test(\"Status code is 404\", function () {\r",
+							"        pm.expect(pm.response.code).to.equal(404);\r",
+							"    });\r",
+							"\r",
+							"    // Validate the response structure and error property\r",
+							"    pm.test(\"Response has an error property\", function () {\r",
+							"        pm.expect(response).to.have.property(\"error\");\r",
+							"        pm.expect(response.error).to.be.a(\"string\");\r",
+							"    });\r",
+							"\r",
+							"    // Check if the response time is within acceptable limits\r",
+							"    pm.test(\"Response time is acceptable\", function () {\r",
+							"        pm.expect(pm.response.responseTime).to.be.below(800);\r",
+							"    });\r",
+							"\r",
+							"    // Validate Content-Type header\r",
+							"    pm.test(\"Content-Type is application/json\", function () {\r",
+							"        pm.expect(pm.response.headers.get(\"Content-Type\")).to.equal(\"application/json\");\r",
+							"    });\r",
+							"\r",
+							"    // Verify the error text value in the response\r",
+							"    pm.test(\"Response error text value is correct\", function () {\r",
+							"        console.log(\"Error message verified\")\r",
+							"        pm.expect(response.error).to.equal(`Object with id = ${pm.globals.get(\"product_id\")} doesn't exist.`);\r",
+							"    });\r",
+							"\r",
+							"    pm.execution.setNextRequest(\"VerifyProductDeleted\")\r",
+							"}\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{fsurl}}/objects/{{product_id}}",
+					"host": [
+						"{{fsurl}}"
+					],
+					"path": [
+						"objects",
+						"{{product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetSingleProduct",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();\r",
+							"\r",
+							"// Verify the status code\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"// Verify the response structure\r",
+							"pm.test(\"Response has valid structure\", function () {\r",
+							"    pm.expect(response).to.have.all.keys(\"id\", \"name\", \"data\");\r",
+							"    pm.expect(response.data).to.have.all.keys(\"year\", \"price\", \"CPU model\", \"Hard disk size\");\r",
+							"});\r",
+							"\r",
+							"// Verify the 'id' field\r",
+							"pm.test(\"ID field is a string\", function () {\r",
+							"    pm.expect(response.id).to.exist;\r",
+							"    pm.expect(response.id).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"// Verify the 'name' field\r",
+							"pm.test(\"Name field is a string\", function () {\r",
+							"    pm.expect(response.name).to.exist;\r",
+							"    pm.expect(response.name).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"// Verify the 'data' fields\r",
+							"pm.test(\"Data fields are valid\", function () {\r",
+							"    pm.expect(response.data.year).to.exist;\r",
+							"    pm.expect(response.data.year).to.be.a('number');\r",
+							"\r",
+							"    pm.expect(response.data.price).to.exist;\r",
+							"    pm.expect(response.data.price).to.be.a('number');\r",
+							"\r",
+							"    pm.expect(response.data[\"CPU model\"]).to.exist;\r",
+							"    pm.expect(response.data[\"CPU model\"]).to.be.a('string');\r",
+							"\r",
+							"    pm.expect(response.data[\"Hard disk size\"]).to.exist;\r",
+							"    pm.expect(response.data[\"Hard disk size\"]).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"// Match response data with global variable values\r",
+							"pm.test(\"Response data matches global variable values\", function () {\r",
+							"    pm.expect(response.id).to.equal(pm.globals.get(\"product_id\"));\r",
+							"    pm.expect(response.name).to.equal(pm.globals.get(\"name\"));\r",
+							"    pm.expect(response.data.year).to.equal(Number(pm.globals.get(\"year\")));\r",
+							"    pm.expect(response.data.price).to.equal(Number(pm.globals.get(\"price\")));\r",
+							"    pm.expect(response.data[\"CPU model\"]).to.equal(pm.globals.get(\"CPUmodel\"));\r",
+							"    pm.expect(response.data[\"Hard disk size\"]).to.equal(pm.globals.get(\"Harddisksize\"));\r",
+							"});\r",
+							"\r",
+							"pm.execution.setNextRequest(\"UpdateProduct\")"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{fsurl}}/objects/{{product_id}}",
+					"host": [
+						"{{fsurl}}"
+					],
+					"path": [
+						"objects",
+						"{{product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "VerifyProductDeleted",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();\r",
+							"\r",
+							"// Verify the status code\r",
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(404);\r",
+							"});\r",
+							"\r",
+							"// Verify the error message in the response\r",
+							"pm.test(\"Error message is correct\", function () {\r",
+							"    pm.expect(response.error).to.exist;\r",
+							"    var actualerror = response.error.toString();\r",
+							"    var expectederror = `Oject with id=${pm.globals.get(\"product_id\")} was not found.`\r",
+							"    pm.expect(actualerror).to.equal(expectederror);\r",
+							"});\r",
+							"\r",
+							"pm.execution.setNextRequest(null);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{fsurl}}/objects/{{product_id}}",
+					"host": [
+						"{{fsurl}}"
+					],
+					"path": [
+						"objects",
+						"{{product_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AllProductsByID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();\r",
+							"\r",
+							"// Test to verify the status code\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"// Test to verify the response body is an array\r",
+							"pm.test(\"Response body is an array\", function () {\r",
+							"    pm.expect(response).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"// Test to verify the presence of required fields in each object\r",
+							"response.forEach(item => {\r",
+							"    pm.test(`Item with id ${item.id} has valid data`, function () {\r",
+							"        if (item.data) {\r",
+							"            pm.expect(item).to.have.property('id');\r",
+							"            pm.expect(item).to.have.property('name');\r",
+							"            pm.expect(item.data).to.have.property('year');\r",
+							"            pm.expect(item.data.year).to.be.a('number');\r",
+							"            pm.expect(item.data).to.have.property('CPU model');\r",
+							"            pm.expect(item.data['CPU model']).to.be.a('string');\r",
+							"            pm.expect(item.data).to.have.property('Hard disk size');\r",
+							"            pm.expect(item.data['Hard disk size']).to.be.a('string');\r",
+							"            pm.expect(item.data).to.have.property('price');\r",
+							"            pm.expect(item.data.price).to.be.a('number');\r",
+							"            pm.expect(item.data).to.have.property('color');\r",
+							"            pm.expect(item.data.color).to.be.a('string');\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"// Match response data with global variable values\r",
+							"response.forEach(item => {\r",
+							"    pm.test(\"Response data matches global variable values\", function () {\r",
+							"        pm.expect(item.id).to.equal(pm.globals.get(\"product_id\"));\r",
+							"        pm.expect(item.name).to.equal(pm.globals.get(\"name\"));\r",
+							"        pm.expect(item.data.year).to.equal(Number(pm.globals.get(\"year\")));\r",
+							"        pm.expect(item.data.price).to.equal(Number(pm.globals.get(\"price\")));\r",
+							"        pm.expect(item.data[\"CPU model\"]).to.equal(pm.globals.get(\"CPUmodel\"));\r",
+							"        pm.expect(item.data[\"Hard disk size\"]).to.equal(pm.globals.get(\"Harddisksize\"));\r",
+							"        pm.expect(item.data.color).to.equal(pm.globals.get(\"color\"));\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"pm.execution.setNextRequest(\"DeleteProduct\");\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{fsurl}}/objects?id={{product_id}}",
+					"host": [
+						"{{fsurl}}"
+					],
+					"path": [
+						"objects"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "{{product_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
